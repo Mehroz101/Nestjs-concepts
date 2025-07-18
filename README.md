@@ -61,7 +61,7 @@ import * as path from 'path';
 // Optional: filter to exclude internal NestJS logs (customize as needed)
 const excludeContexts = ['NestFactory', 'InstanceLoader', 'RoutesResolver', 'RouterExplorer', 'NestApplication'];
 const filterNestInternalLogs = format((info) => {
-  if (info.context && excludeContexts.includes(info.context)) {
+  if (info.context === 'string' && excludeContexts.includes(info.context)) {
     return false;
   }
   return info;
