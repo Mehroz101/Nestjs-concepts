@@ -17,103 +17,42 @@ npm install --save winston nest-winston
 Create a config file at `src/logger/winston-logger.ts`:
 
 ```ts
+// src/logger/winston-logger.ts
 import { WinstonModuleOptions } from 'nest-winston';
 import * as winston from 'winston';
 import * as path from 'path';
 
 export const winstonLoggerConfig: WinstonModuleOptions = {
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+    }),
+  ),
   transports: [
     new winston.transports.Console({
       format: winston.format.simple(),
     }),
-
     new winston.transports.File({
       filename: path.join(__dirname, '../../logs/error.log'),
       level: 'error',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
     }),
-
     new winston.transports.File({
       filename: path.join(__dirname, '../../logs/combined.log'),
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
     }),
   ],
 };
+
 ```
 
 ---
 
-## 3. Create a Custom Logger Service
 
-Create `src/logger/logger.service.ts`:
-
-```ts
-import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
-import { createLogger, transports, format, Logger } from 'winston';
-import * as path from 'path';
-
-// Optional: filter to exclude internal NestJS logs (customize as needed)
-const excludeContexts = ['NestFactory', 'InstanceLoader', 'RoutesResolver', 'RouterExplorer', 'NestApplication'];
-const filterNestInternalLogs = format((info) => {
-  if (info.context === 'string' && excludeContexts.includes(info.context)) {
-    return false;
-  }
-  return info;
-});
-
-@Injectable()
-export class LoggerService implements NestLoggerService {
-  private readonly logger: Logger;
-
-  constructor() {
-    this.logger = createLogger({
-      level: 'info',
-      format: format.combine(
-        filterNestInternalLogs(),
-        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        format.printf(({ timestamp, level, message, context }) => {
-          return `[${timestamp}] [${level.toUpperCase()}] [${context}] ${message}`;
-        }),
-      ),
-      transports: [
-        new transports.Console(),
-        new transports.File({ filename: path.join(__dirname, '../../../logs/error.log'), level: 'error' }),
-        new transports.File({ filename: path.join(__dirname, '../../../logs/combined.log') }),
-      ],
-    });
-  }
-
-  log(message: string, context?: string) {
-    this.logger.info({ message, context });
-  }
-
-  error(message: string, trace?: string, context?: string) {
-    this.logger.error({ message, context, trace });
-  }
-
-  warn(message: string, context?: string) {
-    this.logger.warn({ message, context });
-  }
-
-  debug(message: string, context?: string) {
-    this.logger.debug({ message, context });
-  }
-
-  verbose(message: string, context?: string) {
-    this.logger.verbose({ message, context });
-  }
-}
-```
 
 ---
 
-## 4. Setup Winston Logger Globally in `main.ts`
+## 3. Setup Winston Logger Globally in `main.ts`
 
 Modify `main.ts` to use the Winston logger globally:
 
@@ -138,7 +77,7 @@ bootstrap();
 
 ---
 
-## 5. Using Logger in Middleware
+## 4. Using Logger in Middleware
 
 Since middleware runs outside dependency injection, use NestJS built-in `Logger` class:
 
@@ -175,12 +114,11 @@ Logs from this middleware will be routed through the global Winston logger setup
 Inject your custom `LoggerService`:
 
 ```ts
-import { Injectable } from '@nestjs/common';
-import { LoggerService } from 'src/logger/logger.service';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly logger: LoggerService) {}
+  private readonly logger = new Logger(RequestTimerMiddleware.name);
 
   getAllUsers() {
     this.logger.log('Fetching all users', UsersService.name);
@@ -194,7 +132,6 @@ export class UsersService {
 ## Summary
 
 - Setup Winston transports and formats in `winston-logger.ts`.
-- Create a wrapper `LoggerService` for convenient, context-aware logging.
 - Register Winston globally in `main.ts`.
 - Use NestJS `Logger` class in middleware.
 - Inject and use `LoggerService` in services/controllers for structured logging.
