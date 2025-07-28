@@ -140,6 +140,33 @@ nest g service books
 
 Use `ClientProxy` to send messages from the gateway to microservices.
 
+### 📝 `apps/api-gateway/src/users/users.moule.ts`
+
+```ts
+import { Module } from '@nestjs/common';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
+@Module({
+  imports: [
+    ClientsModule.register([
+      {
+        name: 'USERS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          port: 3001, // Adjust the port as needed
+        },
+      }
+    ])
+  ],
+  controllers: [UsersController],
+  providers: [UsersService]
+})
+export class UsersModule { }
+
+```
+
 ### 📝 `apps/api-gateway/src/users/users.service.ts`
 
 ```ts
