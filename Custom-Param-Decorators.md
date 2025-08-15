@@ -106,6 +106,77 @@ getName(@GetUserField('name') name: string) {
 
 ---
 
+
+
+### ** Example — `@GetUserField()`**
+
+Get a **specific property** from `req.user`.
+
+```ts
+export const GetUserField = createParamDecorator(
+  (field: string, ctx: ExecutionContext) => {
+    const req = ctx.switchToHttp().getRequest();
+    return field ? req.user?.[field] : req.user;
+  },
+);
+```
+
+**Usage:**
+
+```ts
+@Get('profile')
+profile(@GetUserField('email') email: string) {
+  return { email };
+}
+```
+
+---
+
+## ** Example — `@RawBody()`**
+
+Sometimes you need the raw body (e.g., for Stripe webhook signature verification).
+
+```ts
+export const RawBody = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const req = ctx.switchToHttp().getRequest();
+    return req.rawBody; // requires body-parser raw middleware
+  },
+);
+```
+
+**Usage:**
+
+```ts
+@Post('webhook')
+webhook(@RawBody() body: Buffer) {
+  console.log(body.toString());
+  return { status: 'ok' };
+}
+```
+
+---
+
+### 🔹 Why this is better than `@Req()` everywhere:
+
+Instead of doing:
+
+```ts
+myMethod(@Req() req) {
+  const ip = req.ip;
+}
+```
+
+You can just do:
+
+```ts
+myMethod(@ClientIP() ip: string) { ... }
+```
+
+→ **Cleaner, reusable, and testable**.
+
+
+
 ### **8️⃣ Key Differences from Pipes**
 
 | **Custom Param Decorator**  | **Custom Pipe**                                   |
@@ -113,4 +184,7 @@ getName(@GetUserField('name') name: string) {
 | Injects data from request   | Transforms/validates data                         |
 | Works before method runs    | Works before method runs, but after value is read |
 | Does not validate by itself | Usually validates/transforms                      |
+
+
+
 
