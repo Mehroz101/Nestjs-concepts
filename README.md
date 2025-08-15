@@ -1,141 +1,147 @@
-# Using Winston Logger in NestJS Project
 
-This guide explains how to set up and use **Winston logger** in a NestJS project for centralized, powerful logging with separate log files and context-aware logs.
 
----
+## 📚 What to Learn Next (with WHY)
 
-## 1. Install Dependencies
+### 1️⃣ **Exception Handling (Filters)**
 
-```bash
-npm install --save winston nest-winston
-```
+**Why?** To catch and customize errors globally (like 404s, custom messages, etc.)
 
----
+* Learn: `@Catch()`, `HttpException`, `ExceptionFilter`
+* Goal: Return clean, structured error messages.
 
-## 2. Configure Winston Logger
-
-Create a config file at `src/logger/winston-logger.ts`:
-
-```ts
-// src/logger/winston-logger.ts
-import { WinstonModuleOptions } from 'nest-winston';
-import * as winston from 'winston';
-import * as path from 'path';
-
-export const winstonLoggerConfig: WinstonModuleOptions = {
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-    }),
-  ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-    new winston.transports.File({
-      filename: path.join(__dirname, '../../logs/error.log'),
-      level: 'error',
-    }),
-    new winston.transports.File({
-      filename: path.join(__dirname, '../../logs/combined.log'),
-    }),
-  ],
-};
-
-```
+🔗 Bonus: Create a `GlobalExceptionFilter`.
 
 ---
 
+### 2️⃣ **Middleware**
 
+**Why?** To run code **before** the request hits your controller (e.g., logging, auth tokens)
 
----
+* Learn: `NestMiddleware`, `app.use()`, applying to routes
 
-## 3. Setup Winston Logger Globally in `main.ts`
+Use cases:
 
-Modify `main.ts` to use the Winston logger globally:
-
-```ts
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { WinstonModule } from 'nest-winston';
-import { winstonLoggerConfig } from './logger/winston-logger';
-import { ValidationPipe } from '@nestjs/common';
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(winstonLoggerConfig),
-  });
-
-  app.useGlobalPipes(new ValidationPipe());
-
-  await app.listen(process.env.PORT ?? 3000);
-}
-bootstrap();
-```
+* Logging all requests
+* Modifying request headers
+* Checking IPs, etc.
 
 ---
 
-## 4. Using Logger in Middleware
+### 3️⃣ **Guards (Authorization)**
 
-Since middleware runs outside dependency injection, use NestJS built-in `Logger` class:
+**Why?** To **protect routes** — like checking JWT tokens or user roles
 
-```ts
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+* Learn: `@UseGuards()`, `CanActivate`, `AuthGuard`, `RolesGuard`
 
-@Injectable()
-export class RequestTimerMiddleware implements NestMiddleware {
-  private readonly logger = new Logger(RequestTimerMiddleware.name);
+Use cases:
 
-  use(req: Request, res: Response, next: NextFunction) {
-    const start = Date.now();
-
-    res.on('finish', () => {
-      const duration = Date.now() - start;
-      const { method, originalUrl } = req;
-      const { statusCode } = res;
-
-      this.logger.log(`${method} ${originalUrl} ${statusCode} - ${duration}ms`);
-    });
-
-    next();
-  }
-}
-```
-
-Logs from this middleware will be routed through the global Winston logger setup.
+* Admin-only access
+* JWT verification
+* Role-based permissions
 
 ---
 
-## 6. Using Logger in Services or Controllers
+### 4️⃣ **Interceptors**
 
-Inject your custom `LoggerService`:
+**Why?** To modify **responses** or **wrap logic** around method execution (e.g., timing, formatting)
 
-```ts
-import { Injectable, Logger } from '@nestjs/common';
+* Learn: `@UseInterceptors()`, `NestInterceptor`, `ExecutionContext`
 
-@Injectable()
-export class UsersService {
-  private readonly logger = new Logger(RequestTimerMiddleware.name);
+Use cases:
 
-  getAllUsers() {
-    this.logger.log('Fetching all users', UsersService.name);
-    // Your code here
-  }
-}
-```
+* Add response wrapper
+* Measure API time
+* Transform data shape
 
 ---
 
-## Summary
+### 5️⃣ **Custom Pipes**
 
-- Setup Winston transports and formats in `winston-logger.ts`.
-- Register Winston globally in `main.ts`.
-- Use NestJS `Logger` class in middleware.
-- Inject and use `LoggerService` in services/controllers for structured logging.
+**Why?** To validate/transform input data before your controller uses it
+
+* Learn: `PipeTransform`, `@UsePipes()`
+
+Use cases:
+
+* Convert strings to numbers
+* Sanitize inputs
+* Parse enums
 
 ---
 
-**Happy Logging! 🚀**
+### 6️⃣ **MongoDB or PostgreSQL Integration**
+
+**Why?** To connect your APIs to a real database
+
+Options:
+
+* MongoDB → with **Mongoose** (ODM)
+* PostgreSQL → with **TypeORM** or **Prisma**
+
+Choose one and learn:
+
+* How to connect
+* Define schemas/entities
+* Use inside services
+
+---
+
+### 7️⃣ **Authentication (JWT + Passport)**
+
+**Why?** To add login/register functionality and secure routes
+
+Learn:
+
+* `@nestjs/passport`
+* JWT tokens
+* LocalStrategy
+* AuthService + AuthGuard
+
+---
+
+### 8️⃣ **Global Pipes, Guards, Filters**
+
+**Why?** So you don’t repeat code in every route
+
+Learn how to:
+
+* Register them globally in `main.ts`
+
+---
+
+### 9️⃣ **Testing (Unit + E2E)**
+
+**Why?** To build reliable apps and work in teams
+
+* Learn: `jest`, `supertest`, `@nestjs/testing`
+
+---
+
+### 🔟 **Deployment + Environment**
+
+**Why?** To run the app in production
+
+Learn:
+
+* Using `.env`
+* ConfigModule
+* Production build (`npm run build`)
+* Running on server (PM2, Docker, etc.)
+
+---
+
+## 🗂 Suggested Learning Path
+
+1. ✅ Filters
+2. ✅ Middleware
+3. ✅ Guards (Auth)
+4. ✅ Interceptors
+5. ✅ Pipes
+6. ✅ Connect to Database (MongoDB or PostgreSQL)
+7. ✅ JWT Auth (Login/Register)
+8. ✅ Global modules & config
+9. ✅ Testing (optional)
+10. ✅ Deployment
+
+---
+
