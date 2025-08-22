@@ -100,13 +100,106 @@ try {
 }
 ```
 
-### 🔍 Summary
+---
 
-| Feature  | Guard                               |
-| -------- | ----------------------------------- |
-| Purpose  | Decide if a request is allowed      |
-| Runs     | Before route handler                |
-| Returns  | `true` (allow) or `false` (block)   |
-| Best For | Auth, Role checks, Ownership checks |
+# ✅ 4️⃣ Global Guards + Skipping for Public Routes
+
+Sometimes you don’t want to attach a guard to every controller manually. Instead, make it **global**.
+
+📄 `app.module.ts`
+
+```ts
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth.guard';
+
+@Module({
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard, // ✅ Global Guard
+    },
+  ],
+})
+export class AppModule {}
+```
+
+👉 Now, every route in the app is protected.
 
 ---
+
+### 🔓 Skipping Guard for Public Routes
+
+Sometimes you want routes like **login/register** to be open. We can do this with a **custom decorator** + `Reflector`.
+
+📄 `public.decorator.ts`
+
+```ts
+import { SetMetadata } from '@nestjs/common';
+
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+```
+
+📄 `auth.guard.ts`
+
+```ts
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from './public.decorator';
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    // ✅ Check if route has @Public()
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true; // Skip guard
+    }
+
+    const request = context.switchToHttp().getRequest();
+    const token = request.headers['x-auth-token'];
+
+    return token === '123456';
+  }
+}
+```
+
+📄 `auth.controller.ts`
+
+```ts
+import { Controller, Get } from '@nestjs/common';
+import { Public } from './public.decorator';
+
+@Controller('auth')
+export class AuthController {
+  @Get('login')
+  @Public() // ✅ No guard here
+  login() {
+    return { msg: 'Public login endpoint' };
+  }
+
+  @Get('profile')
+  getProfile() {
+    return { msg: 'Protected profile endpoint' };
+  }
+}
+```
+
+---
+
+### 🔍 Summary
+
+| Feature               | Guard Behavior                      |
+| --------------------- | ----------------------------------- |
+| Local Guard           | Attach manually via `@UseGuards()`  |
+| Global Guard          | Applied everywhere with `APP_GUARD` |
+| Skip with `@Public()` | Lets some routes bypass the guard   |
+
+
