@@ -1,42 +1,98 @@
 ## 📂 Folder Structure
+### NestJS Microservices Monorepo Structure
 
 ```text
-project-root/
-├─ src/
-│  ├─ main.ts
-│  ├─ app.module.ts
-│  ├─ config/
-│  │  ├─ configuration.ts
-│  │  ├─ validation.ts
-│  │  └─ app.config.ts
-│  ├─ common/
-│  │  ├─ decorators/
-│  │  ├─ filters/
-│  │  ├─ guards/
-│  │  ├─ interceptors/
-│  │  ├─ middleware/
-│  │  └─ pipes/
+nest-microservices/
+├─ apps/
+│  ├─ api-gateway/
+│  │  ├─ src/
+│  │  │  ├─ main.ts
+│  │  │  ├─ app.module.ts
+│  │  │  └─ modules/
+│  │  │     ├─ auth/
+│  │  │     │   ├─ auth.module.ts
+│  │  │     │   ├─ auth.controller.ts
+│  │  │     │   ├─ auth.service.ts
+│  │  │     │   ├─ strategies/
+│  │  │     │   │   └─ jwt.strategy.ts
+│  │  │     │   └─ dto/
+│  │  │     │       └─ login.dto.ts
+│  │  │     └─ shared/
+│  │  │         └─ common.module.ts
+│  │  ├─ test/
+│  │  └─ package.json
+│  │
+│  ├─ users-service/
+│  │  ├─ src/
+│  │  │  ├─ main.ts
+│  │  │  ├─ app.module.ts
+│  │  │  ├─ users/
+│  │  │  │   ├─ users.module.ts
+│  │  │  │   ├─ users.controller.ts
+│  │  │  │   ├─ users.service.ts
+│  │  │  │   ├─ dto/
+│  │  │  │   │   ├─ create-user.dto.ts
+│  │  │  │   │   └─ update-user.dto.ts
+│  │  │  │   ├─ entities/
+│  │  │  │   │   └─ user.entity.ts
+│  │  │  │   ├─ repositories/
+│  │  │  │   │   └─ user.repository.ts
+│  │  │  │   └─ tests/
+│  │  │  │       └─ users.service.spec.ts
+│  │  │  └─ auth/
+│  │  │      ├─ auth.module.ts
+│  │  │      ├─ auth.service.ts
+│  │  │      ├─ jwt.strategy.ts
+│  │  │      └─ guards/
+│  │  │          └─ jwt-auth.guard.ts
+│  │  ├─ test/
+│  │  └─ package.json
+│  │
+│  ├─ products-service/
+│  │  └─ src/ (similar structure as users)
+│  │
+│  └─ orders-service/
+│     └─ src/ (similar structure as users)
+│
+├─ libs/
 │  ├─ database/
-│  │  ├─ database.module.ts
-│  │  ├─ database.service.ts
-│  │  ├─ naming.strategy.ts
-│  │  └─ entities/
-│  ├─ modules/
-│  │  ├─ users/
-│  │  │  ├─ users.module.ts
-│  │  │  ├─ users.controller.ts
-│  │  │  ├─ users.service.ts
-│  │  │  ├─ dto/
-│  │  │  ├─ entities/
-│  │  │  ├─ repositories/
-│  │  │  └─ tests/
-│  │  ├─ auth/
-│  │  ├─ products/
-│  │  └─ orders/
-│  ├─ shared/
+│  │  ├─ src/
+│  │  │   ├─ database.module.ts
+│  │  │   ├─ database.service.ts
+│  │  │   ├─ naming.strategy.ts
+│  │  │   └─ entities/
+│  │  └─ package.json
+│  │
+│  ├─ redis/
+│  │  ├─ src/
+│  │  │   ├─ redis.module.ts
+│  │  │   └─ redis.service.ts
+│  │  └─ package.json
+│  │
+│  ├─ logger/
+│  │  ├─ src/
+│  │  │   ├─ logger.module.ts
+│  │  │   └─ logger.service.ts
+│  │  └─ package.json
+│  │
+│  ├─ common/
+│  │  ├─ src/
+│  │  │   ├─ decorators/
+│  │  │   ├─ filters/
+│  │  │   ├─ guards/
+│  │  │   ├─ interceptors/
+│  │  │   ├─ middleware/
+│  │  │   └─ pipes/
+│  │  └─ package.json
+│  │
 │  └─ utils/
-├─ test/
+│      ├─ src/
+│      │   ├─ crypto.ts
+│      │   └─ format.ts
+│      └─ package.json
+│
 ├─ migrations/
+├─ docker/
 ├─ .env
 ├─ package.json
 └─ tsconfig.json
