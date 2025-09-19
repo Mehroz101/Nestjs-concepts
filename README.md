@@ -1,4 +1,46 @@
+## 📂 Folder Structure
 
+```text
+project-root/
+├─ src/
+│  ├─ main.ts
+│  ├─ app.module.ts
+│  ├─ config/
+│  │  ├─ configuration.ts
+│  │  ├─ validation.ts
+│  │  └─ app.config.ts
+│  ├─ common/
+│  │  ├─ decorators/
+│  │  ├─ filters/
+│  │  ├─ guards/
+│  │  ├─ interceptors/
+│  │  ├─ middleware/
+│  │  └─ pipes/
+│  ├─ database/
+│  │  ├─ database.module.ts
+│  │  ├─ database.service.ts
+│  │  ├─ naming.strategy.ts
+│  │  └─ entities/
+│  ├─ modules/
+│  │  ├─ users/
+│  │  │  ├─ users.module.ts
+│  │  │  ├─ users.controller.ts
+│  │  │  ├─ users.service.ts
+│  │  │  ├─ dto/
+│  │  │  ├─ entities/
+│  │  │  ├─ repositories/
+│  │  │  └─ tests/
+│  │  ├─ auth/
+│  │  ├─ products/
+│  │  └─ orders/
+│  ├─ shared/
+│  └─ utils/
+├─ test/
+├─ migrations/
+├─ .env
+├─ package.json
+└─ tsconfig.json
+```
 
 ## 📚 What to Learn Next (with WHY)
 
